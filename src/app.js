@@ -225,16 +225,16 @@ io.on("connection", (socket) => {
       (err, results, fields) => {
         if (results.length >= 1) {
           connection.query(
-            "UPDATE wp_player_knife SET knife = ? WHERE steamid = ?",
-            [data.weaponid, data.steamUserId],
+            "UPDATE wp_player_knife SET knife = ?, weapon_team = ? WHERE steamid = ?",
+            [data.weaponid, data.team, data.steamUserId],
             (err, results, fields) => {
               socket.emit("knife-changed", { knife: data.weaponid });
             }
           );
         } else {
           connection.query(
-            "INSERT INTO wp_player_knife (steamid, knife) values (?, ?)",
-            [data.steamUserId, data.weaponid],
+            "INSERT INTO wp_player_knife (steamid, weapon_team, knife) values (?, ?, ?)",
+            [data.steamUserId, data.team, data.weaponid],
             (err, results, fields) => {
               socket.emit("knife-changed", { knife: data.weaponid });
             }
@@ -251,16 +251,16 @@ io.on("connection", (socket) => {
       (err, results, fields) => {
         if (results.length >= 1) {
           connection.query(
-            "UPDATE wp_player_gloves SET weapon_defindex = ? WHERE steamid = ?",
-            [data.weaponid, data.steamUserId],
+            "UPDATE wp_player_gloves SET weapon_defindex = ?, weapon_team = ? WHERE steamid = ?",
+            [data.weaponid, data.team, data.steamUserId],
             (err, results, fields) => {
               socket.emit("glove-changed", { knife: data.weaponid });
             }
           );
         } else {
           connection.query(
-            "INSERT INTO wp_player_gloves (steamid, weapon_defindex) values (?, ?)",
-            [data.steamUserId, data.weaponid],
+            "INSERT INTO wp_player_gloves (steamid, weapon_team, weapon_defindex) values (?, ?, ?)",
+            [data.steamUserId, data.team, data.weaponid],
             (err, results, fields) => {
               socket.emit("glove-changed", { knife: data.weaponid });
             }
@@ -277,16 +277,16 @@ io.on("connection", (socket) => {
       (err, results, fields) => {
         if (results.length >= 1) {
           connection.query(
-            "UPDATE wp_player_music SET music_id = ? WHERE steamid = ?",
-            [data.id, data.steamid],
+            "UPDATE wp_player_music SET music_id = ?, weapon_team = ? WHERE steamid = ?",
+            [data.id, data.team, data.steamid],
             (err, results, fields) => {
               socket.emit("music-changed", { music: data.id });
             }
           );
         } else {
           connection.query(
-            "INSERT INTO wp_player_music (steamid, music_id) values (?, ?)",
-            [data.steamid, data.id],
+            "INSERT INTO wp_player_music (steamid, weapon_team, music_id) values (?, ?, ?)",
+            [data.steamid, data.team, data.id],
             (err, results, fields) => {
               socket.emit("music-changed", { music: data.id });
             }
@@ -303,8 +303,8 @@ io.on("connection", (socket) => {
       (err, results, fields) => {
         if (results.length >= 1) {
           connection.query(
-            "UPDATE wp_player_skins SET weapon_paint_id = ? WHERE steamid = ? AND weapon_defindex = ?",
-            [data.paintid, data.steamid, data.weaponid],
+            "UPDATE wp_player_skins SET weapon_paint_id = ?, weapon_team = ? WHERE steamid = ? AND weapon_defindex = ?",
+            [data.paintid, data.team, data.steamid, data.weaponid],
             (err, results, fields) => {
               connection.query(
                 "SELECT * FROM wp_player_skins WHERE steamid = ?",
@@ -321,8 +321,8 @@ io.on("connection", (socket) => {
           );
         } else {
           connection.query(
-            "INSERT INTO wp_player_skins (steamid, weapon_defindex, weapon_paint_id) VALUES (?, ?, ?)",
-            [data.steamid, data.weaponid, data.paintid],
+            "INSERT INTO wp_player_skins (steamid, weapon_defindex, weapon_paint_id, weapon_team) VALUES (?, ?, ?, ?)",
+            [data.steamid, data.weaponid, data.paintid, data.team],
             (err, results, fields) => {
               connection.query(
                 "SELECT * FROM wp_player_skins WHERE steamid = ?",

@@ -177,6 +177,20 @@
                         </button>
 
                     </div>
+
+                    <div class="bg-nav rounded p-2 p-2 mt-2">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-primary d-flex align-items-center justify-content-center flex-grow-1" onclick="selectTTeams()" id="tTeamsBtn">
+                                <i class="fa-solid fa-skull me-1"></i>T
+                            </button>
+                            <button type="button" class="btn btn-outline-primary d-flex align-items-center justify-content-center flex-grow-1" onclick="selectAllTeams()" id="allTeamsBtn">
+                                <i class="fa-solid fa-users me-1"></i><%= lang.all %>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary d-flex align-items-center justify-content-center flex-grow-1" onclick="selectCTTeams()" id="ctTeamsBtn">
+                                <i class="fa-solid fa-shield me-1"></i>CT
+                            </button>
+                        </div>
+                    </div>
                     
                     <!-- <div class="bg-nav rounded p-0 p-2 pb-0 mt-2">
                         <button class="pushable" onclick="showWorkshop()">

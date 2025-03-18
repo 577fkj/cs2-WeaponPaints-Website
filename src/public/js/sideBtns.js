@@ -198,6 +198,51 @@ const showWorkshop = () => {
   found = true;
 };
 
+
+const getTeam = () => {
+  return localStorage.getItem("team") || "all";
+};
+
+const setTeam = (team) => {
+  localStorage.setItem("team", team);
+};
+
+const initTeam = () => {
+  const team = getTeam();
+  if (team === "all") {
+    selectAllTeams();
+  } else if (team === "ct") {
+    selectCTTeams();
+  } else if (team === "t") {
+    selectTTeams();
+  }
+};
+
+const selectCTTeams = () => {
+  document.getElementById('ctTeamsBtn').classList.add('active');
+  document.getElementById('allTeamsBtn').classList.remove('active');
+  document.getElementById('tTeamsBtn').classList.remove('active');
+  setTeam("ct");
+}
+const selectTTeams = () => {
+  document.getElementById('tTeamsBtn').classList.add('active');
+  document.getElementById('allTeamsBtn').classList.remove('active');
+  document.getElementById('ctTeamsBtn').classList.remove('active');
+  setTeam("t");
+}
+const selectAllTeams = () => {
+  document.getElementById('allTeamsBtn').classList.add('active');
+  document.getElementById('tTeamsBtn').classList.remove('active');
+  document.getElementById('ctTeamsBtn').classList.remove('active');
+  setTeam("all");
+}
+
+initTeam();
+
+window.selectTTeams = selectTTeams;
+window.selectCTTeams = selectCTTeams;
+window.selectAllTeams = selectAllTeams;
+window.getTeam = getTeam;
 window.showKnives = showKnives;
 window.showGloves = showGloves;
 window.showMusics = showMusics;
@@ -252,26 +297,79 @@ sideBtns.forEach((btn) => {
 });
 
 window.changeKnife = (weaponid) => {
-  socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id });
+  const team = getTeam();
+  if (team === "all") {
+    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 2 });
+    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 3 });
+  } else if (team === "t") {
+    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 2 });
+  } else if (team === "ct") {
+    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 3 });
+  }
   document.getElementById(`loading-${weaponid}`).style.visibility = "visible";
   document.getElementById(`loading-${weaponid}`).style.opacity = 1;
 };
 
 window.changeGlove = (weaponid) => {
-  socket.emit("change-glove", {
-    weaponid: weaponIds[weaponid],
-    steamUserId: user.id,
-  });
+  const team = getTeam();
+  if (team === "all") {
+    socket.emit("change-glove", {
+      weaponid: weaponIds[weaponid],
+      steamUserId: user.id,
+      team: 2,
+    });
+    socket.emit("change-glove", {
+      weaponid: weaponIds[weaponid],
+      steamUserId: user.id,
+      team: 3,
+    });
+  } else if (team === "t") {
+    socket.emit("change-glove", {
+      weaponid: weaponIds[weaponid],
+      steamUserId: user.id,
+      team: 2,
+    });
+  } else if (team === "ct") {
+    socket.emit("change-glove", {
+      weaponid: weaponIds[weaponid],
+      steamUserId: user.id,
+      team: 3,
+    });
+  }
   document.getElementById(`loading-${weaponid}`).style.visibility = "visible";
   document.getElementById(`loading-${weaponid}`).style.opacity = 1;
 };
 
 window.changeSkin = (steamid, weaponid, paintid) => {
-  socket.emit("change-skin", {
-    steamid: steamid,
-    weaponid: weaponid,
-    paintid: paintid,
-  });
+  const team = getTeam();
+  if (team === "all") {
+    socket.emit("change-skin", {
+      steamid: steamid,
+      weaponid: weaponid,
+      paintid: paintid,
+      team: 2,
+    });
+    socket.emit("change-skin", {
+      steamid: steamid,
+      weaponid: weaponid,
+      paintid: paintid,
+      team: 3,
+    });
+  } else if (team === "t") {
+    socket.emit("change-skin", {
+      steamid: steamid,
+      weaponid: weaponid,
+      paintid: paintid,
+      team: 2,
+    });
+  } else if (team === "ct") {
+    socket.emit("change-skin", {
+      steamid: steamid,
+      weaponid: weaponid,
+      paintid: paintid,
+      team: 3,
+    });
+  }
   document.getElementById(`loading-${weaponid}-${paintid}`).style.visibility =
     "visible";
   document.getElementById(`loading-${weaponid}-${paintid}`).style.opacity = 1;
@@ -286,7 +384,15 @@ window.changeAgent = (steamid, model, team) => {
 
 window.changeMusic = (steamid, id) => {
   console.log(steamid, id);
-  socket.emit("change-music", { steamid: steamid, id: id });
+  const team = getTeam();
+  if (team === "all") {
+    socket.emit("change-music", { steamid: steamid, id: id, team: 2 });
+    socket.emit("change-music", { steamid: steamid, id: id, team: 3 });
+  } else if (team === "t") {
+    socket.emit("change-music", { steamid: steamid, id: id, team: 2 });
+  } else if (team === "ct") {
+    socket.emit("change-music", { steamid: steamid, id: id, team: 3 });
+  }
   document.getElementById(`loading-${id}`).style.visibility = "visible";
   document.getElementById(`loading-${id}`).style.opacity = 1;
 };
