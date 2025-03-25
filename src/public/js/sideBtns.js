@@ -448,7 +448,7 @@ socket.on("knife-changed", (data) => {
   }
 
   selectedKnife.forEach((el) => {
-    if (data.team === el.weapon_team) {
+    if (data.team === el.weapon_team || data.all) {
       el.knife = data.knife;
     }
   })
@@ -508,8 +508,8 @@ socket.on("glove-changed", (data) => {
   const gloves = getKeyByValue(weaponIds, data.knife);
 
   selectedGloves.forEach((el) => {
-    if (data.team === el.weapon_team) {
-      el.knife = data.knife;
+    if (data.team === el.weapon_team || data.all) {
+      el.weapon_defindex = data.knife;
     }
   })
 
@@ -620,8 +620,8 @@ socket.on("music-changed", (data) => {
 
   
   selectedMusic.forEach((el) => {
-    if (data.team === el.weapon_team) {
-      el.knife = data.knife;
+    if (data.team === el.weapon_team || data.all) {
+      el.music_id = data.knife;
     }
   })
 
