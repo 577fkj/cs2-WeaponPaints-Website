@@ -614,10 +614,31 @@
 
 .active-card {
     margin: -2px;
-    outline: 2px solid rgba(228,174,57) !important;
+    border: 2px solid !important;
+    border-image: linear-gradient(90deg, orange, blue) 1 !important;
 }
 
 .active-card > .settings {
+    visibility: visible;
+    opacity: 1;
+}
+
+.active-card-t {
+    margin: -2px;
+    outline: 2px solid rgba(228,174,57) !important;
+}
+
+.active-card-t > .settings {
+    visibility: visible;
+    opacity: 1;
+}
+
+.active-card-ct {
+    margin: -2px;
+    outline: 2px solid rgba(57, 145, 228) !important;
+}
+
+.active-card-ct > .settings {
     visibility: visible;
     opacity: 1;
 }

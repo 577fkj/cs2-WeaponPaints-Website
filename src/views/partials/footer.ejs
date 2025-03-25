@@ -14,23 +14,29 @@
 <script>
     let lang = "<%- config.lang %>";
     let langObject = <%- JSON.stringify(lang) %>; 
-    let selectedKnife = {
-        knife: undefined,
-        steamid: undefined,
-    }
-    let selectedGloves = {
-        weapon_defindex: undefined,
-        steamid: undefined,
-    }
+    let selectedKnife = [
+        {
+            knife: undefined,
+            steamid: undefined,
+        }
+    ]
+    let selectedGloves = [
+        {
+            weapon_defindex: undefined,
+            steamid: undefined,
+        }
+    ]
     let selectedAgents = {
         agent_ct: undefined,
         agent_t: undefined,
         steamid: undefined,
     }
-    let selectedMusic = {
-        music_id: undefined,
-        steamid: undefined,
-    }
+    let selectedMusic = [
+        {
+            music_id: undefined,
+            steamid: undefined,
+        }
+    ]
 </script>
 
 <script>

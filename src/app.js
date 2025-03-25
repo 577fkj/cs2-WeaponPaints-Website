@@ -6,6 +6,7 @@ const passportSteam = require("passport-steam");
 const SteamStrategy = passportSteam.Strategy;
 const mysql = require("mysql");
 const path = require("path");
+const sql = require("./sql.js")
 
 // load configuration files
 const config = require("./config.json");
@@ -22,6 +23,13 @@ let realm = `${config.PROTOCOL}://${config.HOST}${config.SUBDIR}`;
 if (config.HOST == "localhost" || config.HOST == "127.0.0.1") {
   returnURL = `${config.PROTOCOL}://${config.HOST}:${config.PORT}${config.SUBDIR}api/auth/steam/return`;
   realm = `${config.PROTOCOL}://${config.HOST}:${config.PORT}${config.SUBDIR}`;
+}
+
+if (config.proxy) {
+  console.log("Using proxy: " + config.proxy);
+  // set proxy for http and https requests
+  process.env.HTTP_PROXY = config.proxy;
+  process.env.HTTPS_PROXY = config.proxy;
 }
 
 // connect to db
@@ -44,6 +52,8 @@ connection.connect(function (err) {
 setInterval(() => {
   connection.query("SELECT 1", (err, res, fields) => {});
 }, 10000);
+
+sql.setConnection(connection);
 
 // generate random secret if not set
 randomSecret = () => {
@@ -114,21 +124,29 @@ app.get(config.SUBDIR, (req, res) => {
                     "SELECT * FROM wp_player_music WHERE steamid = ?",
                     [req.user.id],
                     (err, results4, fields) => {
-                      results = results !=undefined ? results : [];
-                      results2 = results2 !=undefined ? results2 : [];
-                      results3 = results3 !=undefined ? results3 : [];
-                      results4 = results4 !=undefined ? results4 : [];
-                      res.render("index", {
-                        config: config,
-                        session: req.session,
-                        user: req.user,
-                        knife: results[0],
-                        skins: results2,
-                        agents: results3[0],
-                        musics: results4[0],
-                        lang: lang,
-                        subdir: config.SUBDIR,
-                      });
+                      connection.query(
+                        "SELECT * FROM wp_player_gloves WHERE steamid = ?",
+                        [req.user.id],
+                        (err, results5, fields) => {
+                          results = results !=undefined ? results : [];
+                          results2 = results2 !=undefined ? results2 : [];
+                          results3 = results3 !=undefined ? results3 : [];
+                          results4 = results4 !=undefined ? results4 : [];
+                          results5 = results5 !=undefined ? results5 : [];
+                          res.render("index", {
+                            config: config,
+                            session: req.session,
+                            user: req.user,
+                            knife: results,
+                            skins: results2,
+                            agents: results3[0],
+                            musics: results4,
+                            gloves: results5,
+                            lang: lang,
+                            subdir: config.SUBDIR,
+                          });
+                        }
+                      );
                     }
                   );
                 }
@@ -219,176 +237,91 @@ io.on("connection", (socket) => {
   console.log("Socket connected");
 
   socket.on("change-knife", (data) => {
-    connection.query(
-      "SELECT * FROM wp_player_knife WHERE steamid = ? AND weapon_team = ?",
-      [data.steamUserId, data.team],
-      (err, results, fields) => {
-        if (results.length >= 1) {
-          connection.query(
-            "UPDATE wp_player_knife SET knife = ? WHERE steamid = ? AND weapon_team = ?",
-            [data.weaponid, data.steamUserId, data.team],
-            (err, results, fields) => {
-              socket.emit("knife-changed", { knife: data.weaponid });
-            }
-          );
-        } else {
-          connection.query(
-            "INSERT INTO wp_player_knife (steamid, weapon_team, knife) values (?, ?, ?)",
-            [data.steamUserId, data.team, data.weaponid],
-            (err, results, fields) => {
-              socket.emit("knife-changed", { knife: data.weaponid });
-            }
-          );
-        }
-      }
-    );
+    if (data.all) {
+      sql.kinfe.updateKinfe(data.steamid, data.weaponid, 2).then(result => {
+        return sql.kinfe.updateKinfe(data.steamid, data.weaponid, 3);
+      }).then(result => {
+        socket.emit("knife-changed", { knife: data.weaponid, all: true });
+      });
+    } else {
+      sql.kinfe.updateKinfe(data.steamid, data.weaponid, data.team).then(result => {
+        socket.emit("knife-changed", { knife: data.weaponid, team: data.team });
+      });
+    }
   });
 
   socket.on("change-glove", (data) => {
-    connection.query(
-      "SELECT * FROM wp_player_gloves WHERE steamid = ? AND weapon_team = ?",
-      [data.steamUserId, data.team],
-      (err, results, fields) => {
-        if (results.length >= 1) {
-          connection.query(
-            "UPDATE wp_player_gloves SET weapon_defindex = ? WHERE steamid = ? AND weapon_team = ?",
-            [data.weaponid, data.steamUserId, data.team],
-            (err, results, fields) => {
-              socket.emit("glove-changed", { knife: data.weaponid });
-            }
-          );
-        } else {
-          connection.query(
-            "INSERT INTO wp_player_gloves (steamid, weapon_team, weapon_defindex) values (?, ?, ?)",
-            [data.steamUserId, data.team, data.weaponid],
-            (err, results, fields) => {
-              socket.emit("glove-changed", { knife: data.weaponid });
-            }
-          );
-        }
-      }
-    );
+    if (data.all) {
+      sql.glove.updateGlove(data.weaponid, data.steamid, 2).then(result => {
+        return sql.glove.updateGlove(data.weaponid, data.steamid, 3);
+      }).then(result => {
+        socket.emit("glove-changed", { knife: data.weaponid, all: true });
+      });
+    } else {
+      sql.glove.updateGlove(data.weaponid, data.steamid, data.team).then(result => {
+        socket.emit("glove-changed", { knife: data.weaponid, team: data.team });
+      });
+    }
   });
 
   socket.on("change-music", (data) => {
-    connection.query(
-      "SELECT * FROM wp_player_music WHERE steamid = ? AND weapon_team = ?",
-      [data.steamid, data.team],
-      (err, results, fields) => {
-        if (results.length >= 1) {
-          connection.query(
-            "UPDATE wp_player_music SET music_id = ? WHERE steamid = ? AND weapon_team = ?",
-            [data.id, data.steamid, data.team],
-            (err, results, fields) => {
-              socket.emit("music-changed", { music: data.id });
-            }
-          );
-        } else {
-          connection.query(
-            "INSERT INTO wp_player_music (steamid, weapon_team, music_id) values (?, ?, ?)",
-            [data.steamid, data.team, data.id],
-            (err, results, fields) => {
-              socket.emit("music-changed", { music: data.id });
-            }
-          );
-        }
-      }
-    );
+    if (data.all) {
+      sql.music.updateMusic(data.id, data.steamid, 2).then(result => {
+        return sql.music.updateMusic(data.id, data.steamid, 3);
+      }).then(result => {
+        socket.emit("music-changed", { music: data.id, all: true });
+      });
+    } else {
+      sql.music.updateMusic(data.id, data.steamid, data.team).then(result => {
+        socket.emit("music-changed", { music: data.id, team: data.team });
+      });
+    }
   });
 
   socket.on("change-skin", (data) => {
-    connection.query(
-      "SELECT * FROM wp_player_skins WHERE weapon_defindex = ? AND steamid = ? AND weapon_team = ?",
-      [data.weaponid, data.steamid, data.team],
-      (err, results, fields) => {
-        if (results.length >= 1) {
-          connection.query(
-            "UPDATE wp_player_skins SET weapon_paint_id = ? WHERE steamid = ? AND weapon_defindex = ? AND weapon_team = ?",
-            [data.paintid, data.steamid, data.weaponid, data.team],
-            (err, results, fields) => {
-              connection.query(
-                "SELECT * FROM wp_player_skins WHERE steamid = ?",
-                [data.steamid],
-                (err, results2, fields) => {
-                  socket.emit("skin-changed", {
-                    weaponid: data.weaponid,
-                    paintid: data.paintid,
-                    newSkins: results2,
-                  });
-                }
-              );
-            }
-          );
-        } else {
-          connection.query(
-            "INSERT INTO wp_player_skins (steamid, weapon_defindex, weapon_paint_id, weapon_team) VALUES (?, ?, ?, ?)",
-            [data.steamid, data.weaponid, data.paintid, data.team],
-            (err, results, fields) => {
-              connection.query(
-                "SELECT * FROM wp_player_skins WHERE steamid = ?",
-                [data.steamid],
-                (err, results2, fields) => {
-                  socket.emit("skin-changed", {
-                    weaponid: data.weaponid,
-                    paintid: data.paintid,
-                    newSkins: results2,
-                  });
-                }
-              );
-            }
-          );
-        }
-      }
-    );
+    if (data.all) {
+      sql.skin.updateSkin(data.steamid, data.weaponid, data.paintid, 2).then(result => {
+        return sql.skin.updateSkin(data.steamid, data.weaponid, data.paintid, 3);
+      }).then(result => {
+        socket.emit("skin-changed", {
+          weaponid: data.weaponid,
+          paintid: data.paintid,
+          newSkins: result,
+          all: true
+        });
+      });
+    } else {
+      sql.skin.updateSkin(data.steamid, data.weaponid, data.paintid, data.team).then(result => {
+        socket.emit("skin-changed", {
+          weaponid: data.weaponid,
+          paintid: data.paintid,
+          newSkins: result,
+          team: data.team
+        });
+      });
+    }
   });
 
   socket.on("change-agent", (data) => {
-    connection.query(
-      "SELECT * FROM wp_player_agents WHERE steamid = ?",
-      [data.steamid],
-      (err, results, fields) => {
-        if (err) throw err;
-        if (results.length >= 1) {
-          connection.query(
-            `UPDATE wp_player_agents SET agent_${data.team} = ? WHERE steamid = ?`,
-            [data.model, data.steamid],
-            (err, results, fields) => {
-              if (err) throw err;
-              connection.query(
-                "SELECT * FROM wp_player_agents WHERE steamid = ?",
-                [data.steamid],
-                (err, results2, fields) => {
-                  if (err) throw err;
-                  socket.emit("agent-changed", {
-                    agents: results2,
-                    currentAgent: data.model,
-                  });
-                }
-              );
-            }
-          );
-        } else {
-          connection.query(
-            `INSERT INTO wp_player_agents (steamid, agent_${data.team}) VALUES (?, ?)`,
-            [data.steamid, data.model],
-            (err, results, fields) => {
-              if (err) throw err;
-              connection.query(
-                "SELECT * FROM wp_player_agents WHERE steamid = ?",
-                [data.steamid],
-                (err, results2, fields) => {
-                  if (err) throw err;
-                  socket.emit("agent-changed", {
-                    agents: results2,
-                    currentAgent: data.model,
-                  });
-                }
-              );
-            }
-          );
-        }
-      }
-    );
+    if (data.all) {
+      sql.agent.updateAgent(data.model, data.steamid, 2).then(result => {
+        return sql.agent.updateAgent(data.model, data.steamid, 3);
+      }).then(result => {
+        socket.emit("agent-changed", {
+          agents: result,
+          currentAgent: data.model,
+          all: true
+        });
+      });
+    } else {
+      sql.agent.updateAgent(data.model, data.steamid, data.team).then(result => {
+        socket.emit("agent-changed", {
+          agents: result,
+          currentAgent: data.model,
+          team: data.team
+        });
+      });
+    }
   });
 
   socket.on("change-params", (data) => {

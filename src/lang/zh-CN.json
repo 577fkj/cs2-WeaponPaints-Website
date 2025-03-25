@@ -37,5 +37,6 @@
     "minimalWearCode":"略磨",
     "fieldTestedCode":"久经",
     "wellWornCode":"破损",
-    "battleScarredCode":"战痕"
+    "battleScarredCode":"战痕",
+    "all": "全部"
 }

@@ -31,7 +31,7 @@ window.changeSkinTemplate = (weapon, langObject, selectedKnife) => {
     
     card.innerHTML = `
     <div class="rounded-3 d-flex flex-column card-common weapon-card" id="${weapon.weapon_name}"data-type="weaponCard" data-btn-type="${weapon.weapon_name}">
-        <button id="reset-${weapon.weapon_name}" onclick="resetSkin(${weapon.weapon_defindex}, '${selectedKnife.steamid}')" style="z-index: 3;" class="revert d-flex justify-content-center align-items-center text-danger rounded-circle">
+        <button id="reset-${weapon.weapon_name}" onclick="resetSkin(${weapon.weapon_defindex}, '${user.id}')" style="z-index: 3;" class="revert d-flex justify-content-center align-items-center text-danger rounded-circle">
             <i class="fa-solid fa-rotate-right"></i>
         </button>
 
@@ -59,20 +59,32 @@ window.changeKnifeSkinTemplate = (knife, langObject, selectedKnife) => {
     card.classList.add('col-6', 'col-sm-4', 'col-md-3', 'p-2')
 
     let buttonInner = langObject.setWeapon
-    let buttonFunc = `changeKnife(\'${knife.weapon_name}\', ${selectedKnife.steamid})`
+    let buttonFunc = `changeKnife(\'${knife.weapon_name}\')`
 
     // check if knife is selected
-    let active = ''
-    if (knife.weapon_name == selectedKnife.knife) {
+    let active = []
+    selectedKnife.forEach((el) => {
+        if (knife.weapon_name == el.knife) {
+            console.log(el)
+            if (el.weapon_team == 2)
+                active.push('active-card-t')
+            else
+                active.push('active-card-ct')
+            buttonInner = langObject.changeSkin
+            buttonFunc =  `knifeSkins(\'${knife.weapon_name}\')`
+        }
+    })
+    if (active.length == 2) {
         active = 'active-card'
-        buttonInner = langObject.changeSkin
-        buttonFunc =  `knifeSkins(\'${knife.weapon_name}\')`
+    } else {
+        active = active[0] || ''
     }
+    
 
 
     card.innerHTML = `
     <div class="rounded-3 d-flex flex-column card-common weapon-card ${active} weapon_knife" id="${knife.weapon_name}" data-type="weaponCard" data-btn-type="${knife.weapon_name}">
-        <button id="reset-${knife.weapon_name}" onclick="resetSkin(${knife.weapon_defindex}, '${selectedKnife.steamid}')" style="z-index: 3;" class="revert d-flex justify-content-center align-items-center text-danger rounded-circle">
+        <button id="reset-${knife.weapon_name}" onclick="resetSkin(${knife.weapon_defindex}, '${user.id}')" style="z-index: 3;" class="revert d-flex justify-content-center align-items-center text-danger rounded-circle">
             <i class="fa-solid fa-rotate-right"></i>
         </button>
 
@@ -118,15 +130,28 @@ window.knivesTemplate = (knife, langObject, selectedKnife) => {
     card.classList.add('col-6', 'col-sm-4', 'col-md-3', 'p-2')
 
     let buttonInner = langObject.setWeapon
-    let buttonFunc = `changeKnife(\'${knife.weapon_name}\', ${selectedKnife.steamid})`
+    let buttonFunc = `changeKnife(\'${knife.weapon_name}\')`
 
     // check if knife is selected
-    let active = ''
-    if (knife.weapon_name == selectedKnife.knife) {
+    let active = []
+    selectedKnife.forEach((el) => {
+        console.log(el)
+        if (knife.weapon_name == el.knife) {
+            if (el.weapon_team == 2) {
+                active.push('active-card-t')
+            } else {
+                active.push('active-card-ct')
+            }
+            buttonInner = langObject.changeSkin
+            buttonFunc =  `knifeSkins(\'${knife.weapon_name}\')`
+        }
+    })
+    if (active.length == 2) {
         active = 'active-card'
-        buttonInner = langObject.changeSkin
-        buttonFunc =  `knifeSkins(\'${knife.weapon_name}\')`
+    } else {
+        active = active[0] || ''
     }
+
 
     card.innerHTML = `
     <div class="rounded-3 d-flex flex-column card-common weapon-card ${active} weapon_knife" id="${knife.weapon_name}" data-type="weaponCard" data-btn-type="${knife.weapon_name}">
@@ -154,15 +179,25 @@ window.glovesTemplate = (gloves, langObject, selectedGloves) => {
     card.classList.add('col-6', 'col-sm-4', 'col-md-3', 'p-2')
 
     let buttonInner = langObject.setWeapon
-    let buttonFunc = `changeGlove(\'${gloves.weapon_name}\', ${selectedGloves.steamid})`
+    let buttonFunc = `changeGlove(\'${gloves.weapon_name}\')`
 
     // check if knife is selected
-    let active = ''
-
-    if (gloves.weapon_defindex == selectedGloves.weapon_defindex) {
+    let active = []
+    selectedGloves.forEach((el) => {
+        if (gloves.weapon_name == getKeyByValue(weaponIds, el.weapon_defindex)) {
+            console.log(el)
+            if (el.weapon_team == 2)
+                active.push('active-card-t')
+            else
+                active.push('active-card-ct')
+            buttonInner = langObject.changeSkin
+            buttonFunc =  `knifeSkins(\'${gloves.weapon_name}\')`
+        }
+    })
+    if (active.length == 2) {
         active = 'active-card'
-        buttonInner = langObject.changeSkin
-        buttonFunc =  `knifeSkins(\'${gloves.weapon_name}\')`
+    } else {
+        active = active[0] || ''
     }
 
     card.innerHTML = `
@@ -191,20 +226,31 @@ window.changeGlovesSkinTemplate = (gloves, langObject, selectedGloves) => {
     card.classList.add('col-6', 'col-sm-4', 'col-md-3', 'p-2')
 
     let buttonInner = langObject.setWeapon
-    let buttonFunc = `changeGlove(\'${gloves.weapon_name}\', ${selectedGloves.steamid})`
+    let buttonFunc = `changeGlove(\'${gloves.weapon_name}\')`
 
     // check if knife is selected
-    let active = ''
-    if (gloves.weapon_defindex == selectedGloves.weapon_defindex) {
+    let active = []
+    selectedGloves.forEach((el) => {
+        if (gloves.weapon_name == getKeyByValue(weaponIds, el.weapon_defindex)) {
+            console.log(el)
+            if (el.weapon_team == 2)
+                active.push('active-card-t')
+            else
+                active.push('active-card-ct')
+            buttonInner = langObject.changeSkin
+            buttonFunc =  `knifeSkins(\'${gloves.weapon_name}\')`
+        }
+    })
+    if (active.length == 2) {
         active = 'active-card'
-        buttonInner = langObject.changeSkin
-        buttonFunc =  `knifeSkins(\'${gloves.weapon_name}\')`
+    } else {
+        active = active[0] || ''
     }
 
 
     card.innerHTML = `
     <div class="rounded-3 d-flex flex-column card-common weapon-card ${active} weapon_knife" id="${gloves.weapon_name}" data-type="weaponCard" data-btn-type="${gloves.weapon_name}">
-        <button id="reset-${gloves.weapon_name}" onclick="resetSkin(${gloves.weapon_defindex}, '${selectedGloves.steamid}')" style="z-index: 3;" class="revert d-flex justify-content-center align-items-center text-danger rounded-circle">
+        <button id="reset-${gloves.weapon_name}" onclick="resetSkin(${gloves.weapon_defindex}, '${user.id}')" style="z-index: 3;" class="revert d-flex justify-content-center align-items-center text-danger rounded-circle">
             <i class="fa-solid fa-rotate-right"></i>
         </button>
 
@@ -479,13 +525,15 @@ window.createWorkshop = () => {
                 }
 
                 if (el.weapon_defindex >= 500 && el.weapon_defindex < 4725) {
-                    if (getKeyByValue(weaponIds, parseInt(el.weapon_defindex)) == selectedKnife.knife) {
-                        skinsElement += `
-                            <div class="rounded-3 d-flex small-card-common workshop-weapon-card ${bgColor} m-1" style="width: 100px; height: 100px;" data-type="skinCard" data-locked="true">
-                                <img src="${weapon.image}" class="workshop-weapon-img m-auto" loading="lazy">
-                            </div>
-                        `
-                    }
+                    selectedKnife.forEach((el) => {
+                        if (getKeyByValue(weaponIds, parseInt(el.weapon_defindex)) == el.knife) {
+                            skinsElement += `
+                                <div class="rounded-3 d-flex small-card-common workshop-weapon-card ${bgColor} m-1" style="width: 100px; height: 100px;" data-type="skinCard" data-locked="true">
+                                    <img src="${weapon.image}" class="workshop-weapon-img m-auto" loading="lazy">
+                                </div>
+                            `
+                        }
+                    })
                 } else if (el.weapon_defindex >= 4725) {
                     if (el.weapon_defindex == selectedGloves.weapon_defindex) {
                         skinsElement += `
@@ -569,8 +617,10 @@ window.showAgents = (type) => {
 
             // Make outline if this skin is selected
             
-            if (selectedAgents.agent_t == element.model || selectedAgents.agent_ct == element.model) {
-                active = 'active-card'
+            if (selectedAgents.agent_t == element.model) {
+                active = 'active-card-t'
+            } else if (selectedAgents.agent_ct == element.model) {
+                active = 'active-card-ct'
             }
             
             let card = document.createElement('div')
@@ -624,12 +674,22 @@ window.showMusics = () =>{
 
         let bgColor = 'card-uncommon'
         let phase  = ''
-        let active = ''
+        let active = []
         let steamid = user.id
 
         // Make outline if this skin is selected
-        if (selectedMusic.music_id == element.id) {
+        selectedMusic.forEach((el) => {
+            if (el.music_id == element.id) {
+                if (el.weapon_team == 2)
+                    active.push('active-card-t')
+                else
+                    active.push('active-card-ct')
+            }
+        })
+        if (active.length == 2) {
             active = 'active-card'
+        } else {
+            active = active[0] || ''
         }
         
         let card = document.createElement('div')

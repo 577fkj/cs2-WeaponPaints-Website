@@ -299,12 +299,11 @@ sideBtns.forEach((btn) => {
 window.changeKnife = (weaponid) => {
   const team = getTeam();
   if (team === "all") {
-    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 2 });
-    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 3 });
+    socket.emit("change-knife", { weaponid: weaponid, steamid: user.id, all: true });
   } else if (team === "t") {
-    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 2 });
+    socket.emit("change-knife", { weaponid: weaponid, steamid: user.id, team: 2 });
   } else if (team === "ct") {
-    socket.emit("change-knife", { weaponid: weaponid, steamUserId: user.id, team: 3 });
+    socket.emit("change-knife", { weaponid: weaponid, steamid: user.id, team: 3 });
   }
   document.getElementById(`loading-${weaponid}`).style.visibility = "visible";
   document.getElementById(`loading-${weaponid}`).style.opacity = 1;
@@ -315,24 +314,19 @@ window.changeGlove = (weaponid) => {
   if (team === "all") {
     socket.emit("change-glove", {
       weaponid: weaponIds[weaponid],
-      steamUserId: user.id,
-      team: 2,
-    });
-    socket.emit("change-glove", {
-      weaponid: weaponIds[weaponid],
-      steamUserId: user.id,
-      team: 3,
+      steamid: user.id,
+      all: true,
     });
   } else if (team === "t") {
     socket.emit("change-glove", {
       weaponid: weaponIds[weaponid],
-      steamUserId: user.id,
+      steamid: user.id,
       team: 2,
     });
   } else if (team === "ct") {
     socket.emit("change-glove", {
       weaponid: weaponIds[weaponid],
-      steamUserId: user.id,
+      steamid: user.id,
       team: 3,
     });
   }
@@ -347,13 +341,7 @@ window.changeSkin = (steamid, weaponid, paintid) => {
       steamid: steamid,
       weaponid: weaponid,
       paintid: paintid,
-      team: 2,
-    });
-    socket.emit("change-skin", {
-      steamid: steamid,
-      weaponid: weaponid,
-      paintid: paintid,
-      team: 3,
+      all: true,
     });
   } else if (team === "t") {
     socket.emit("change-skin", {
@@ -386,8 +374,7 @@ window.changeMusic = (steamid, id) => {
   console.log(steamid, id);
   const team = getTeam();
   if (team === "all") {
-    socket.emit("change-music", { steamid: steamid, id: id, team: 2 });
-    socket.emit("change-music", { steamid: steamid, id: id, team: 3 });
+    socket.emit("change-music", { steamid: steamid, id: id, all: true });
   } else if (team === "t") {
     socket.emit("change-music", { steamid: steamid, id: id, team: 2 });
   } else if (team === "ct") {
@@ -431,7 +418,26 @@ socket.on("knife-changed", (data) => {
   let elms = document.getElementsByClassName("weapon_knife");
 
   for (var i = 0; i < elms.length; i++) {
-    elms[i].classList.remove("active-card");
+    let classList = elms[i].classList;
+    if (classList.contains('active-card')) {
+      classList.remove("active-card");
+      if (data.team == 2) {
+        classList.add("active-card-ct")
+      } else if (data.team === 3) {
+        classList.add("active-card-t")
+      } else {
+        classList.remove("active-card-t");
+        classList.remove("active-card-ct");
+      }
+    } else if (data.team === 2) {
+      classList.remove("active-card-t");
+    } else if (data.team === 3) {
+      classList.remove("active-card-ct");
+    } else {
+      classList.remove("active-card-t");
+      classList.remove("active-card-ct");
+    }
+
     const button = elms[i].querySelectorAll("button");
     button[
       button.length - 1
@@ -441,9 +447,20 @@ socket.on("knife-changed", (data) => {
     };
   }
 
-  selectedKnife.knife = data.knife;
+  selectedKnife.forEach((el) => {
+    if (data.team === el.weapon_team) {
+      el.knife = data.knife;
+    }
+  })
 
-  document.getElementById(data.knife).classList.add("active-card");
+  if (data.all) {
+    document.getElementById(data.knife).classList.add("active-card");
+  } else if (data.team === 2) {
+    document.getElementById(data.knife).classList.add("active-card-t");
+  } else {
+    document.getElementById(data.knife).classList.add("active-card-ct");
+  }
+  
   const button = document.getElementById(data.knife).querySelectorAll("button");
   button[
     button.length - 1
@@ -459,7 +476,26 @@ socket.on("glove-changed", (data) => {
   let elms = document.getElementsByClassName("weapon_knife");
 
   for (var i = 0; i < elms.length; i++) {
-    elms[i].classList.remove("active-card");
+    let classList = elms[i].classList;
+    if (classList.contains('active-card')) {
+      classList.remove("active-card");
+      if (data.team == 2) {
+        classList.add("active-card-ct")
+      } else if (data.team === 3) {
+        classList.add("active-card-t")
+      } else {
+        classList.remove("active-card-t");
+        classList.remove("active-card-ct");
+      }
+    } else if (data.team === 2) {
+      classList.remove("active-card-t");
+    } else if (data.team === 3) {
+      classList.remove("active-card-ct");
+    } else {
+      classList.remove("active-card-t");
+      classList.remove("active-card-ct");
+    }
+
     const button = elms[i].querySelectorAll("button");
     button[
       button.length - 1
@@ -471,9 +507,20 @@ socket.on("glove-changed", (data) => {
 
   const gloves = getKeyByValue(weaponIds, data.knife);
 
-  selectedGloves.weapon_defindex = data.knife;
+  selectedGloves.forEach((el) => {
+    if (data.team === el.weapon_team) {
+      el.knife = data.knife;
+    }
+  })
 
-  document.getElementById(gloves).classList.add("active-card");
+  if (data.all) {
+    document.getElementById(gloves).classList.add("active-card");
+  } else if (data.team === 2) {
+    document.getElementById(gloves).classList.add("active-card-t");
+  } else {
+    document.getElementById(gloves).classList.add("active-card-ct");
+  }
+
   const button = document.getElementById(gloves).querySelectorAll("button");
   button[
     button.length - 1
@@ -489,14 +536,38 @@ socket.on("skin-changed", (data) => {
   let elms = document.getElementsByClassName("weapon-card");
 
   for (var i = 0; i < elms.length; i++) {
-    elms[i].classList.remove("active-card");
+    let classList = elms[i].classList;
+    if (classList.contains('active-card')) {
+      classList.remove("active-card");
+      if (data.team == 2) {
+        classList.add("active-card-ct")
+      } else if (data.team === 3) {
+        classList.add("active-card-t")
+      } else {
+        classList.remove("active-card-t");
+        classList.remove("active-card-ct");
+      }
+    } else if (data.team === 2) {
+      classList.remove("active-card-t");
+    } else if (data.team === 3) {
+      classList.remove("active-card-ct");
+    } else {
+      classList.remove("active-card-t");
+      classList.remove("active-card-ct");
+    }
   }
 
   selectedSkins = data.newSkins;
 
-  document
-    .getElementById(`weapon-${data.weaponid}-${data.paintid}`)
-    .classList.add("active-card");
+  let classList = document.getElementById(`weapon-${data.weaponid}-${data.paintid}`).classList;
+  if (data.all) {
+    classList.add("active-card");
+  } else if (data.weapon_team == 2) {
+    classList.add("active-card-t");
+  } else {
+    classList.add("active-card-ct");
+  }
+
   document.getElementById(
     `loading-${data.weaponid}-${data.paintid}`
   ).style.opacity = 0;
@@ -509,14 +580,14 @@ socket.on("agent-changed", (data) => {
   let elms = document.getElementsByClassName("weapon-card");
 
   for (var i = 0; i < elms.length; i++) {
-    elms[i].classList.remove("active-card");
+    elms[i].classList.remove(`active-card-${data.team}`);
   }
 
   selectedAgents = data.agents[0];
 
   document
     .getElementById(`agent-${data.currentAgent}`)
-    .classList.add("active-card");
+    .classList.add(`active-card-${data.team}`);
   document.getElementById(`loading-${data.currentAgent}`).style.opacity = 0;
   document.getElementById(`loading-${data.currentAgent}`).style.visibility =
     "hidden";
@@ -526,13 +597,42 @@ socket.on("music-changed", (data) => {
   let elms = document.getElementsByClassName("weapon-card");
 
   for (var i = 0; i < elms.length; i++) {
-    elms[i].classList.remove("active-card");
+    let classList = elms[i].classList;
+    if (classList.contains('active-card')) {
+      classList.remove("active-card");
+      if (data.team == 2) {
+        classList.add("active-card-ct")
+      } else if (data.team === 3) {
+        classList.add("active-card-t")
+      } else {
+        classList.remove("active-card-t");
+        classList.remove("active-card-ct");
+      }
+    } else if (data.team === 2) {
+      classList.remove("active-card-t");
+    } else if (data.team === 3) {
+      classList.remove("active-card-ct");
+    } else {
+      classList.remove("active-card-t");
+      classList.remove("active-card-ct");
+    }
   }
 
-  selectedMusic.music_id = data.music;
-  document
-    .getElementById(`music-${data.music}`)
-    .classList.add("active-card");
+  
+  selectedMusic.forEach((el) => {
+    if (data.team === el.weapon_team) {
+      el.knife = data.knife;
+    }
+  })
+
+  let classList = document.getElementById(`music-${data.music}`).classList;
+  if (data.all) {
+    classList.add("active-card");
+  } else if (data.weapon_team == 2) {
+    classList.add("active-card-t");
+  } else {
+    classList.add("active-card-ct");
+  }
   document.getElementById(`loading-${data.music}`).style.opacity = 0;
   document.getElementById(`loading-${data.music}`).style.visibility =
     "hidden";
@@ -556,7 +656,7 @@ window.knifeSkins = (knifeType) => {
 
       let bgColor = "card-uncommon";
       let phase = "";
-      let active = "";
+      let active = [];
       let steamid = user.id;
       let weaponid = weaponIds[element.weapon.id];
       let paintid = element.paint_index;
@@ -584,11 +684,21 @@ window.knifeSkins = (knifeType) => {
           (el.weapon_defindex == weaponIds[element.weapon.id] ||
             el.model_idx == weaponIds[element.weapon.id])
         ) {
-          active = "active-card";
+          if (el.weapon_team == 2) {
+            active.push("active-card-t");
+          } else {
+            active.push("active-card-ct");
+          }
           float = el.weapon_wear;
           pattern = el.weapon_seed;
         }
       });
+
+      if (active.length == 2) {
+        active = 'active-card'
+      } else {
+        active = active[0] || ''
+      }
 
       let card = document.createElement("div");
       card.classList.add("col-6", "col-sm-4", "col-md-3", "p-2");

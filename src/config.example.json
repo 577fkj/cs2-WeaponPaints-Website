@@ -15,5 +15,6 @@
     "connect": {
         "show": true,
         "url": "steam://connect/[IP:PORT]?appid=730/[Server password if needed]"
-    }
+    },
+    "proxy": "http://127.0.0.1:7890"
 }
